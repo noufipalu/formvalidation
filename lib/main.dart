@@ -27,6 +27,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  late String? _passwordError = null;
+  bool _isPasswordValid = false;
+
+  late String? _emailError = null;
+  bool _isEmailValid = false;
 
   late String _email;
   late String _password;
@@ -69,13 +74,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
+                  errorText: _emailError,
                 ),
                 keyboardType: TextInputType.emailAddress,
+                onChanged: (value) {
+                  setState(() {
+                    _emailError = _validateEmail(value)!;
+                    _isEmailValid = _emailError == null; // Set the validation status
+                  });
+                },
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Please enter your email';
                   }
-                  if (!_isValidEmail(value)) {
+                  if (_isValidEmail(value) != null) {
                     return 'Please enter a valid email address';
                   }
                   return null;
@@ -89,6 +101,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 controller: _passwordController,
                 decoration: InputDecoration(
                   labelText: 'Password',
+                  errorText: _passwordError,
                 ),
                 obscureText: true,
                 validator: (value) {
@@ -115,6 +128,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 onSaved: (value) {
                   _password = value!;
                 },
+                onChanged: (value) {
+                  setState(() {
+                    _isPasswordValid = _passwordError == null; // Set the validation status
+                  });
+                },
               ),
               SizedBox(height: 16.0),
               TextButton(
@@ -127,10 +145,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
       ),
     );
   }
-  bool _isValidEmail(String value) {
+  String? _isValidEmail(String value) {
     // Use a regular expression pattern to validate email addresses
     final pattern = r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$';
     final regex = RegExp(pattern);
-    return regex.hasMatch(value);
+    if (!regex.hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String value) {
+    if (value!.isEmpty) {
+      return 'Please enter your email';
+    }
+    return null;
   }
 }
